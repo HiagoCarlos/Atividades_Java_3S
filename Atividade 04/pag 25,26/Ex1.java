@@ -1,42 +1,56 @@
-import java.util.*;
+import java.util.Arrays;
 
-class Ex1 {
-    private Map<Integer, List<Integer>> adjacencia;
-
-    public Ex1() {
-        this.adjacencia = new HashMap<>();
-    }
-
-    public void adicionarVertice(int vertice) {
-        adjacencia.putIfAbsent(vertice, new ArrayList<>());
-    }
-
-    public void adicionarAresta(int origem, int destino) {
-        adjacencia.putIfAbsent(origem, new ArrayList<>());
-        adjacencia.putIfAbsent(destino, new ArrayList<>());
-        adjacencia.get(origem).add(destino);
-        adjacencia.get(destino).add(origem);
-    }
-
-    public void exibirGrafo() {
-        for (var entry : adjacencia.entrySet()) {
-            System.out.print(entry.getKey() + ": ");
-            for (var vizinho : entry.getValue()) {
-                System.out.print(vizinho + " ");
-            }
-            System.out.println();
-        }
-    }
+public class Ex1 {
 
     public static void main(String[] args) {
-        Ex1 grafo = new Ex1();
-        grafo.adicionarVertice(1);
-        grafo.adicionarVertice(2);
-        grafo.adicionarVertice(3);
-        grafo.adicionarAresta(1, 2);
-        grafo.adicionarAresta(2, 3);
-        grafo.adicionarAresta(1, 3);
+        // Matriz de adjacência para o grafo completo K3
+        int[][] k3 = {
+            {0, 1, 1},
+            {1, 0, 1},
+            {1, 1, 0}
+        };
+        
+        // Matriz de adjacência para o grafo completo K7
+        int[][] k7 = {
+            {0, 1, 1, 1, 1, 1, 1},
+            {1, 0, 1, 1, 1, 1, 1},
+            {1, 1, 0, 1, 1, 1, 1},
+            {1, 1, 1, 0, 1, 1, 1},
+            {1, 1, 1, 1, 0, 1, 1},
+            {1, 1, 1, 1, 1, 0, 1},
+            {1, 1, 1, 1, 1, 1, 0}
+        };
+        
+        // Calcula e exibe o complemento das matrizes
+        int[][] complementoK3 = calcularComplemento(k3);
+        int[][] complementoK7 = calcularComplemento(k7);
+        
+        System.out.println("Complemento de K3:");
+        exibirMatriz(complementoK3);
+        
+        System.out.println("Complemento de K7:");
+        exibirMatriz(complementoK7);
+    }
 
-        grafo.exibirGrafo();
+    // Método para calcular o complemento de uma matriz de adjacência
+    private static int[][] calcularComplemento(int[][] matriz) {
+        int tamanho = matriz.length;
+        int[][] matrizComplementar = new int[tamanho][tamanho];
+        
+        for (int i = 0; i < tamanho; i++) {
+            for (int j = 0; j < tamanho; j++) {
+                if (i != j) {
+                    matrizComplementar[i][j] = 1 - matriz[i][j];
+                }
+            }
+        }
+        return matrizComplementar;
+    }
+
+    // Método para exibir a matriz no console
+    private static void exibirMatriz(int[][] matriz) {
+        for (int[] linha : matriz) {
+            System.out.println(Arrays.toString(linha));
+        }
     }
 }
