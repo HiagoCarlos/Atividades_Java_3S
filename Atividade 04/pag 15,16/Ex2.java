@@ -1,69 +1,68 @@
 import java.util.*;
 
 public class Ex2 {
+
+    private static final Map<String, Map<String, Integer>> GRAFO = new HashMap<>();
+
     public static void main(String[] args) {
-        // Grafo representado como uma matriz de adjacência
-        int[][] grafo = {
-            {0, 70, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0},   // A
-            {70, 0, 0, 110, 0, 0, 0, 0, 0, 0, 0, 0}, // B
-            {31, 0, 0, 0, 39, 0, 0, 0, 0, 0, 0, 0},  // C
-            {0, 110, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0}, // D
-            {0, 0, 39, 0, 0, 26, 12, 0, 0, 0, 0, 0}, // E
-            {0, 0, 0, 30, 26, 0, 0, 0, 0, 0, 0, 0},  // F
-            {0, 0, 0, 0, 12, 0, 0, 19, 61, 0, 0, 0}, // G
-            {0, 0, 0, 0, 0, 0, 19, 0, 0, 100, 67, 0},// H
-            {0, 0, 0, 0, 0, 0, 61, 0, 0, 0, 0, 140}, // I
-            {0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 85}, // J
-            {0, 0, 0, 0, 0, 0, 0, 67, 0, 0, 0, 74},  // L
-            {0, 0, 0, 0, 0, 0, 0, 0, 140, 85, 74, 0} // M
-        };
+        configurarGrafo();
+        Map<String, Integer> distancias = calcularDijkstra("A");
 
-        int startVertex = 0; // Vértice A (index 0)
-        int nVertices = grafo[0].length;
-
-        // Algoritmo de Dijkstra
-        int[] shortestDistances = dijkstra(grafo, startVertex, nVertices);
-
-        // Imprimir os menores caminhos
-        System.out.println("Os menores caminhos do vértice A para todos os outros vértices:");
-        for (int i = 0; i < shortestDistances.length; i++) {
-            System.out.println("A -> " + (char) (i + 'A') + ": " + shortestDistances[i]);
-        }
+        distancias.forEach((vertice, distancia) -> 
+            System.out.println("Distância de A para " + vertice + ": " + distancia)
+        );
     }
 
-    public static int[] dijkstra(int[][] graph, int startVertex, int nVertices) {
-        int[] shortestDistances = new int[nVertices];
-        boolean[] added = new boolean[nVertices];
+    private static void configurarGrafo() {
+        GRAFO.put("A", Map.of("B", 2, "C", 4));
+        GRAFO.put("B", Map.of("A", 2, "C", 1, "D", 7));
+        GRAFO.put("C", Map.of("A", 4, "B", 1, "D", 3));
+        GRAFO.put("D", Map.of("B", 7, "C", 3));
+    }
 
-        // Inicializar todas as distâncias com infinito e nenhuma adicionada
-        Arrays.fill(shortestDistances, Integer.MAX_VALUE);
-        Arrays.fill(added, false);
+    private static Map<String, Integer> calcularDijkstra(String origem) {
+        Map<String, Integer> distancias = new HashMap<>();
+        PriorityQueue<Vertice> filaPrioridade = new PriorityQueue<>(Comparator.comparingInt(v -> v.distancia));
+        Set<String> visitados = new HashSet<>();
 
-        // A distância do vértice inicial para si mesmo é 0
-        shortestDistances[startVertex] = 0;
+        // Inicializa todas as distâncias como infinito
+        for (String vertice : GRAFO.keySet()) {
+            distancias.put(vertice, Integer.MAX_VALUE);
+        }
+        distancias.put(origem, 0);
+        filaPrioridade.add(new Vertice(origem, 0));
 
-        // Calcular as menores distâncias
-        for (int i = 0; i < nVertices - 1; i++) {
-            int nearestVertex = -1;
-            int shortestDistance = Integer.MAX_VALUE;
-            for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) {
-                if (!added[vertexIndex] && shortestDistances[vertexIndex] < shortestDistance) {
-                    nearestVertex = vertexIndex;
-                    shortestDistance = shortestDistances[vertexIndex];
-                }
-            }
+        while (!filaPrioridade.isEmpty()) {
+            Vertice verticeAtual = filaPrioridade.poll();
+            String nomeVerticeAtual = verticeAtual.nome;
 
-            added[nearestVertex] = true;
+            if (!visitados.contains(nomeVerticeAtual)) {
+                visitados.add(nomeVerticeAtual);
+                Map<String, Integer> vizinhos = GRAFO.get(nomeVerticeAtual);
 
-            for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++) {
-                int edgeDistance = graph[nearestVertex][vertexIndex];
+                for (Map.Entry<String, Integer> entrada : vizinhos.entrySet()) {
+                    String vizinho = entrada.getKey();
+                    int pesoAresta = entrada.getValue();
+                    int novaDistancia = distancias.get(nomeVerticeAtual) + pesoAresta;
 
-                if (edgeDistance > 0 && ((shortestDistance + edgeDistance) < shortestDistances[vertexIndex])) {
-                    shortestDistances[vertexIndex] = shortestDistance + edgeDistance;
+                    if (novaDistancia < distancias.get(vizinho)) {
+                        distancias.put(vizinho, novaDistancia);
+                        filaPrioridade.add(new Vertice(vizinho, novaDistancia));
+                    }
                 }
             }
         }
 
-        return shortestDistances;
+        return distancias;
+    }
+
+    static class Vertice {
+        String nome;
+        int distancia;
+
+        Vertice(String nome, int distancia) {
+            this.nome = nome;
+            this.distancia = distancia;
+        }
     }
 }
