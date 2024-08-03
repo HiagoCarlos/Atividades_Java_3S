@@ -1,53 +1,67 @@
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Ex1 {
+
+    private static final Map<Integer, Set<Integer>> GRAFO1 = new HashMap<>();
+    private static final Map<Integer, Set<Integer>> GRAFO2 = new HashMap<>();
+    private static final Map<Integer, Integer> CORRESPONDENCIA = new HashMap<>();
+
     public static void main(String[] args) {
-        // Grafo 1
-        char[] verticesGrafo1 = {'a', 'b', 'c', 'd'};
-        int[][] arestasGrafo1 = {
-            {0, 1, 0, 1},  // a
-            {1, 0, 1, 0},  // b
-            {0, 1, 0, 1},  // c
-            {1, 0, 1, 0}   // d
-        };
+        inicializarGrafos();
+        inicializarCorrespondencia();
 
-        // Grafo 2
-        char[] verticesGrafo2 = {'w', 'x', 'y', 'z'};
-        int[][] arestasGrafo2 = {
-            {0, 0, 1, 1},  // w
-            {0, 0, 1, 1},  // x
-            {1, 1, 0, 0},  // y
-            {1, 1, 0, 0}   // z
-        };
-
-        // Correspondência proposta
-        HashMap<Character, Character> correspondencia = new HashMap<>();
-        correspondencia.put('a', 'w');
-        correspondencia.put('b', 'x');
-        correspondencia.put('c', 'y');
-        correspondencia.put('d', 'z');
-
-        // Verificação do isomorfismo
-        boolean isIsomorph = checkIsomorphism(verticesGrafo1, arestasGrafo1, verticesGrafo2, arestasGrafo2, correspondencia);
-        if (isIsomorph) {
-            System.out.println("Os grafos são isomorfos.");
+        if (verificarIsomorfismo()) {
+            System.out.println("A correspondência proposta preserva o isomorfismo.");
         } else {
-            System.out.println("Os grafos não são isomorfos.");
+            System.out.println("A correspondência proposta NÃO preserva o isomorfismo.");
         }
     }
 
-    public static boolean checkIsomorphism(char[] vertices1, int[][] edges1, char[] vertices2, int[][] edges2, HashMap<Character, Character> correspondence) {
-        for (int i = 0; i < vertices1.length; i++) {
-            for (int j = 0; j < vertices1.length; j++) {
-                char v1 = vertices1[i];
-                char u1 = vertices1[j];
-                char v2 = correspondence.get(v1);
-                char u2 = correspondence.get(u1);
-                int indexV2 = new String(vertices2).indexOf(v2);
-                int indexU2 = new String(vertices2).indexOf(u2);
-                if (edges1[i][j] != edges2[indexV2][indexU2]) {
-                    return false;
+    private static void inicializarGrafos() {
+        // Inicializa o grafo 1
+        GRAFO1.put(1, Set.of(2, 3));
+        GRAFO1.put(2, Set.of(1, 4));
+        GRAFO1.put(3, Set.of(1, 4));
+        GRAFO1.put(4, Set.of(2, 3));
+
+        // Inicializa o grafo 2
+        GRAFO2.put(1, Set.of(2, 3));
+        GRAFO2.put(2, Set.of(1, 4));
+        GRAFO2.put(3, Set.of(1, 4));
+        GRAFO2.put(4, Set.of(2, 3));
+    }
+
+    private static void inicializarCorrespondencia() {
+        // Define a correspondência entre os vértices dos dois grafos
+        CORRESPONDENCIA.put(1, 1);
+        CORRESPONDENCIA.put(2, 2);
+        CORRESPONDENCIA.put(3, 3);
+        CORRESPONDENCIA.put(4, 4);
+    }
+
+    private static boolean verificarIsomorfismo() {
+        for (Integer verticeGrafo1 : GRAFO1.keySet()) {
+            Integer verticeCorrespondente = CORRESPONDENCIA.get(verticeGrafo1);
+            if (verticeCorrespondente == null) {
+                return false;
+            }
+            
+            Set<Integer> vizinhosGrafo1 = GRAFO1.get(verticeGrafo1);
+            Set<Integer> vizinhosGrafo2 = GRAFO2.get(verticeCorrespondente);
+            
+            Set<Integer> vizinhosMapeados = new HashSet<>();
+            for (Integer vizinho : vizinhosGrafo1) {
+                Integer vizinhoMapeado = CORRESPONDENCIA.get(vizinho);
+                if (vizinhoMapeado != null) {
+                    vizinhosMapeados.add(vizinhoMapeado);
                 }
+            }
+
+            if (!vizinhosMapeados.equals(vizinhosGrafo2)) {
+                return false;
             }
         }
         return true;
