@@ -1,77 +1,84 @@
-import java.util.*;
+import java.util.Arrays;
 
-class Ex1 {
-    private int vertices;
-    private LinkedList<Par<Integer, Integer>>[] adj;
+public class Ex1 {
 
-    class Par<U, V> {
-        public U first;
-        public V second;
+    public static void main(String[] args) {
+        int[][] matrizAdjacencia = {
+            {0, 4, 0, 0, 0, 0, 0, 8, 0},
+            {4, 0, 8, 0, 0, 0, 0, 11, 0},
+            {0, 8, 0, 7, 0, 4, 0, 0, 2},
+            {0, 0, 7, 0, 9, 14, 0, 0, 0},
+            {0, 0, 0, 9, 0, 10, 0, 0, 0},
+            {0, 0, 4, 14, 10, 0, 2, 0, 0},
+            {0, 0, 0, 0, 0, 2, 0, 1, 6},
+            {8, 11, 0, 0, 0, 0, 1, 0, 7},
+            {0, 0, 2, 0, 0, 0, 6, 7, 0}
+        };
 
-        public Par(U first, V second) {
-            this.first = first;
-            this.second = second;
-        }
+        Ex1 algoritmo = new Ex1();
+        algoritmo.exibirDistanciasDijkstra(matrizAdjacencia, 0);
     }
 
-    @SuppressWarnings("unchecked")
-    Ex1(int vertices) {
-        this.vertices = vertices;
-        adj = new LinkedList[vertices];
-        for (int i = 0; i < vertices; i++) {
-            adj[i] = new LinkedList<>();
-        }
-    }
+    /**
+     * Calcula e exibe as distâncias mínimas do vértice de origem para todos os outros vértices usando o algoritmo de Dijkstra.
+     *
+     * @param matriz A matriz de adjacência do grafo.
+     * @param origem O vértice de origem para o qual calcular as distâncias.
+     */
+    public void exibirDistanciasDijkstra(int[][] matriz, int origem) {
+        int tamanho = matriz.length;
+        int[] distancias = new int[tamanho];
+        boolean[] verticesVisitados = new boolean[tamanho];
 
-    void adicionarAresta(int origem, int destino, int peso) {
-        adj[origem].add(new Par<>(destino, peso));
-        adj[destino].add(new Par<>(origem, peso));
-    }
+        Arrays.fill(distancias, Integer.MAX_VALUE);
+        distancias[origem] = 0;
 
-    void dijkstra(int src) {
-        PriorityQueue<Par<Integer, Integer>> pq = new PriorityQueue<>(vertices, Comparator.comparingInt(a -> a.second));
-        int[] dist = new int[vertices];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        pq.add(new Par<>(src, 0));
-        dist[src] = 0;
+        for (int i = 0; i < tamanho - 1; i++) {
+            int verticeAtual = encontrarVerticeMinDistancia(distancias, verticesVisitados);
+            verticesVisitados[verticeAtual] = true;
 
-        while (!pq.isEmpty()) {
-            int u = pq.poll().first;
-
-            for (Par<Integer, Integer> par : adj[u]) {
-                int v = par.first;
-                int weight = par.second;
-
-                if (dist[v] > dist[u] + weight) {
-                    dist[v] = dist[u] + weight;
-                    pq.add(new Par<>(v, dist[v]));
+            for (int adjacente = 0; adjacente < tamanho; adjacente++) {
+                if (!verticesVisitados[adjacente] && matriz[verticeAtual][adjacente] != 0 
+                        && distancias[verticeAtual] != Integer.MAX_VALUE
+                        && distancias[verticeAtual] + matriz[verticeAtual][adjacente] < distancias[adjacente]) {
+                    distancias[adjacente] = distancias[verticeAtual] + matriz[verticeAtual][adjacente];
                 }
             }
         }
 
-        printarSolucoes(dist);
+        exibirResultados(distancias);
     }
 
-    void printarSolucoes(int[] dist) {
-        System.out.println("Distância do vértice A para todos os outros vértices:");
-        for (int i = 0; i < vertices; i++) {
-            System.out.println("A -> " + i + " = " + dist[i]);
+    /**
+     * Encontra o vértice com a menor distância não visitado.
+     *
+     * @param distancias O array das distâncias mínimas.
+     * @param visitados O array de vértices visitados.
+     * @return O índice do vértice com a menor distância.
+     */
+    public int encontrarVerticeMinDistancia(int[] distancias, boolean[] visitados) {
+        int distanciaMinima = Integer.MAX_VALUE;
+        int indiceMinimo = -1;
+
+        for (int vertice = 0; vertice < distancias.length; vertice++) {
+            if (!visitados[vertice] && distancias[vertice] < distanciaMinima) {
+                distanciaMinima = distancias[vertice];
+                indiceMinimo = vertice;
+            }
         }
+
+        return indiceMinimo;
     }
 
-    public static void main(String[] args) {
-        Ex1 g = new Ex1(11);
-        g.adicionarAresta(0, 1, 70);  // A -> B
-        g.adicionarAresta(0, 2, 31);  // A -> C
-        g.adicionarAresta(0, 3, 26);  // A -> D
-        g.adicionarAresta(0, 4, 12);  // A -> E
-        g.adicionarAresta(1, 5, 110); // B -> F
-        g.adicionarAresta(2, 6, 70);  // C -> G
-        g.adicionarAresta(3, 7, 100); // D -> H
-        g.adicionarAresta(4, 8, 67);  // E -> I
-        g.adicionarAresta(5, 9, 30);  // F -> J
-        g.adicionarAresta(6, 10, 126);// G -> K
-
-        g.dijkstra(0);
+    /**
+     * Exibe as distâncias mínimas de cada vértice a partir da origem.
+     *
+     * @param distancias O array das distâncias mínimas.
+     */
+    public void exibirResultados(int[] distancias) {
+        System.out.println("Vértice \t Distância da Origem");
+        for (int i = 0; i < distancias.length; i++) {
+            System.out.println(i + " \t\t " + distancias[i]);
+        }
     }
 }
